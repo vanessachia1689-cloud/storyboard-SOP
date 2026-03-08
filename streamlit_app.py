@@ -8,7 +8,7 @@ DIFY_API_KEY = "app-13FM0MX0k6nThq3Dojt4NdlU"
 DIFY_API_URL = "https://api.dify.ai/v1/workflows/run"
 # ===============================================
 
-st.set_page_config(page_title="北美短剧分镜【5集极限打包版】", page_icon="🎬", layout="wide")
+st.set_page_config(page_title="AI短剧分镜【5集一键复制版】", page_icon="🎬", layout="wide")
 
 # 注入一点 CSS，让复制框更显眼，防止误选
 st.markdown("""
@@ -18,7 +18,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🎬 分镜生成器 - 极限五拼版 (5集/次)")
+st.title("🎬 剧本分镜SOP生成器【V-Team】 (5集一键复制版)")
 st.info("💡 极限测试中：系统已自动将每 **5集** 打包成一个复制模块。一键点击，五倍效率！")
 
 user_title = st.text_input("剧名 (Title):", placeholder="例如：The Wrong Text")
