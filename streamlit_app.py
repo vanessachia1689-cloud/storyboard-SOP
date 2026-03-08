@@ -4,7 +4,7 @@ import json
 import re
 
 # ================= 剧组配置文件 =================
-DIFY_API_KEY = "app-qPoN84eZD62hGpaxetu2KTnN"
+DIFY_API_KEY = "app-13FM0MX0k6nThq3Dojt4NdlU"
 DIFY_API_URL = "https://api.dify.ai/v1/workflows/run"
 # ===============================================
 
