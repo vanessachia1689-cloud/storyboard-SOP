@@ -40,7 +40,8 @@ if st.button("🚀 开始批量生成并切分"):
             }
             
             try:
-                response = requests.post(DIFY_API_URL, headers=headers, json=payload, stream=True)
+                # --- 核心修改：强制设定双重超时，连接等5分钟，数据接收死等2小时 ---
+                response = requests.post(DIFY_API_URL, headers=headers, json=payload, stream=True, timeout=(300, 7200))
                 response.raise_for_status()
                 
                 for line in response.iter_lines():
@@ -78,7 +79,7 @@ if st.button("🚀 开始批量生成并切分"):
                     ep_name = ep_title_search.group(1) if ep_title_search else "片段"
                     valid_episodes.append({"name": ep_name, "content": clean_ep})
             
-            # 2. 每 5集 拼装进一个盲盒 (本次核心修改点)
+            # 2. 每 5集 拼装进一个盲盒 
             chunk_size = 5
             for i in range(0, len(valid_episodes), chunk_size):
                 chunk = valid_episodes[i:i + chunk_size]
