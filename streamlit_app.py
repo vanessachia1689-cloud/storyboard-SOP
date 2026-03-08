@@ -8,7 +8,7 @@ DIFY_API_KEY = "app-13FM0MX0k6nThq3Dojt4NdlU"
 DIFY_API_URL = "https://api.dify.ai/v1/workflows/run"
 # ===============================================
 
-st.set_page_config(page_title="北美短剧分镜【双集打包复制版】", page_icon="🎬", layout="wide")
+st.set_page_config(page_title="北美短剧分镜【5集极限打包版】", page_icon="🎬", layout="wide")
 
 # 注入一点 CSS，让复制框更显眼，防止误选
 st.markdown("""
@@ -18,8 +18,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🎬 分镜生成器 - 极速双拼版 (2集/次)")
-st.info("💡 操作提示：为突破飞书粘贴极限，系统已自动将每 **2集** 打包成一个复制模块。一键点击，双倍效率！")
+st.title("🎬 分镜生成器 - 极限五拼版 (5集/次)")
+st.info("💡 极限测试中：系统已自动将每 **5集** 打包成一个复制模块。一键点击，五倍效率！")
 
 user_title = st.text_input("剧名 (Title):", placeholder="例如：The Wrong Text")
 user_input = st.text_area("粘贴剧本 (建议控制在10-30集):", height=200)
@@ -55,16 +55,16 @@ if st.button("🚀 开始批量生成并切分"):
                                     full_content += chunk
                                     progress_box.text(f"🚀 已接收分镜字符: {len(full_content)} ...")
                                 elif json_data.get('event') == 'workflow_finished':
-                                    status.update(label="✅ 全部生成完毕！已进入双集打包阶段。", state="complete", expanded=False)
+                                    status.update(label="✅ 全部生成完毕！已进入5集打包阶段。", state="complete", expanded=False)
                             except json.JSONDecodeError:
                                 continue
             except Exception as e:
                 st.error(f"连接失败: {e}")
 
-        # --- 自动切分并进行双集打包 ---
+        # --- 自动切分并进行 5集 打包 ---
         if full_content:
             st.divider()
-            st.subheader("📦 “双集打包”一键复制工作台")
+            st.subheader("📦 “5集连包”一键复制工作台")
             
             # 1. 先把所有集数切成单片
             raw_episodes = re.split(r'(?=\n#{1,3}\s?EP\s?\d+)|(?=\nEP\s?\d+)|(?=\n第\s?\d+\s?集)', "\n" + full_content)
@@ -78,18 +78,18 @@ if st.button("🚀 开始批量生成并切分"):
                     ep_name = ep_title_search.group(1) if ep_title_search else "片段"
                     valid_episodes.append({"name": ep_name, "content": clean_ep})
             
-            # 2. 每2集拼装进一个盲盒
-            chunk_size = 2
+            # 2. 每 5集 拼装进一个盲盒 (本次核心修改点)
+            chunk_size = 5
             for i in range(0, len(valid_episodes), chunk_size):
                 chunk = valid_episodes[i:i + chunk_size]
                 
-                # 动态生成组合标题 (例如: EP1 - EP2)
+                # 动态生成组合标题 (例如: EP1 - EP5)
                 if len(chunk) == 1:
                     group_title = chunk[0]['name']
                 else:
                     group_title = f"{chunk[0]['name']} - {chunk[-1]['name']}"
                 
-                # 拼接这两集的内容 (中间加分隔符)
+                # 拼接这几集的内容 (中间加分隔符)
                 group_content = "\n\n---\n\n".join([item['content'] for item in chunk])
                 
                 # 渲染独立的 UI 容器
