@@ -40,8 +40,8 @@ if st.button("🚀 开始批量生成并切分"):
             }
             
             try:
-                # --- 核心修改：强制设定双重超时，连接等5分钟，数据接收死等2小时 ---
-                response = requests.post(DIFY_API_URL, headers=headers, json=payload, stream=True, timeout=(300, 7200))
+                # --- 核心修改：强制设定双重超时，连接等5分钟(300秒)，数据接收死等4小时(14400秒) ---
+                response = requests.post(DIFY_API_URL, headers=headers, json=payload, stream=True, timeout=(300, 14400))
                 response.raise_for_status()
                 
                 for line in response.iter_lines():
