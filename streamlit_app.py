@@ -9,7 +9,7 @@ DIFY_API_KEY = "app-13FM0MX0k6nThq3Dojt4NdlU"
 DIFY_API_URL = "https://api.dify.ai/v1/workflows/run"
 # ===============================================
 
-st.set_page_config(page_title="AI短剧分镜【5集一键复制版】", page_icon="🎬", layout="wide")
+st.set_page_config(page_title="AI短剧分镜【3集一键复制版】", page_icon="🎬", layout="wide")
 
 # 注入一点 CSS，让复制框更显眼，防止误选
 st.markdown("""
@@ -36,8 +36,8 @@ def clear_form():
 # ================= UI 布局与标题 =================
 col_title, col_btn = st.columns([5, 1])
 with col_title:
-    st.title("🎬 剧本分镜SOP生成器【V-Team】 (5集一键复制版)")
-    st.info("💡 极限测试中：系统已自动将每 **5集** 打包成一个复制模块。一键点击，五倍效率！")
+    st.title("🎬 剧本分镜SOP生成器【V-Team】 (3集一键复制版)")
+    st.info("💡 极速交付：系统已自动将每 **3集** 打包成一个复制模块，不足3集自动兼容。")
 with col_btn:
     # 顶部对齐的一键清空按钮
     st.markdown("<div style='margin-top: 25px;'></div>", unsafe_allow_html=True)
@@ -58,6 +58,7 @@ if generate_btn:
     else:
         # 点击生成时，先清空上一次的结果
         st.session_state.full_content = ""
+        st.session_state._show_balloons = True # 重置气球状态
         radar_area.empty()
         
         with st.status("🎬 正在实时流式传输分镜内容...", expanded=True) as status:
@@ -97,7 +98,7 @@ if generate_btn:
                                 elif event_type == 'ping':
                                     heartbeat_box.caption(f"💓 后台疯狂撰写中... [最近心跳: {time.strftime('%H:%M:%S')}]")
                                     
-                                # 📝 文本块接收
+                                # 📝 文本块接收 (前端用户依然看到飞速滚动的字符，保持体验)
                                 elif event_type == 'text_chunk':
                                     chunk = json_data.get('data', {}).get('text', '')
                                     temp_content += chunk
@@ -110,10 +111,15 @@ if generate_btn:
                                     workflow_finished_normally = True
                                     break
                                     
-                                # ✅ 完美结束
+                                # ✅ 完美结束 (核心截胡点)
                                 elif event_type == 'workflow_finished':
+                                    # 【核心适配】：流式传输(text_chunk)带有废话，我们直接从最终结果抓取 Python 节点的纯净输出
+                                    outputs = json_data.get('data', {}).get('outputs', {})
+                                    if 'final_markdown' in outputs:
+                                        temp_content = outputs['final_markdown']
+                                        
                                     heartbeat_box.empty()
-                                    status.update(label="✅ 全部生成完毕！已进入5集打包阶段。", state="complete", expanded=False)
+                                    status.update(label="✅ 全部生成完毕！已进入3集打包阶段。", state="complete", expanded=False)
                                     st.session_state.full_content = temp_content
                                     workflow_finished_normally = True
                                     break
@@ -137,21 +143,29 @@ if generate_btn:
 if st.session_state.full_content:
     with radar_area.container():
         st.divider()
-        st.subheader("📦 “5集连包”一键复制工作台")
+        st.subheader("📦 “3集连包”一键复制工作台")
         
-        # 1. 先把所有集数切成单片
-        raw_episodes = re.split(r'(?=\n#{1,3}\s?EP\s?\d+)|(?=\nEP\s?\d+)|(?=\n第\s?\d+\s?集)', "\n" + st.session_state.full_content)
+        content_to_split = st.session_state.full_content
+        # 预清理：去掉全局大标题，防止它干扰第一集的切分
+        content_to_split = content_to_split.replace("# 🎬 30集完整项目分镜脚本 (极速闪切版)\n\n", "")
+        
+        # 1. 核心适配切分：优先使用 Dify 传过来的标准分隔符，极其稳定
+        if "\n\n---\n\n" in content_to_split:
+            raw_episodes = content_to_split.split("\n\n---\n\n")
+        else:
+            # 兼容备用方案
+            raw_episodes = re.split(r'(?=\n#{1,3}\s?EP\s?\d+)|(?=\nEP\s?\d+)|(?=\n第\s?\d+\s?集)', "\n" + content_to_split)
         
         valid_episodes = []
         for ep in raw_episodes:
             clean_ep = ep.strip()
             if clean_ep and len(clean_ep) > 50: # 过滤掉杂质
-                ep_title_search = re.search(r'(EP\s?\d+|第\s?\d+\s?集)', clean_ep)
-                ep_name = ep_title_search.group(1) if ep_title_search else "片段"
+                ep_title_search = re.search(r'(EP\s?\d+|第\s?\d+\s?集)', clean_ep, re.IGNORECASE)
+                ep_name = ep_title_search.group(1).upper() if ep_title_search else "片段"
                 valid_episodes.append({"name": ep_name, "content": clean_ep})
         
-        # 2. 每 5集 拼装进一个盲盒 
-        chunk_size = 5
+        # 2. 每 3集 拼装进一个盲盒 (不足3集也会完美兼容不报错)
+        chunk_size = 3
         for i in range(0, len(valid_episodes), chunk_size):
             chunk = valid_episodes[i:i + chunk_size]
             
@@ -161,7 +175,7 @@ if st.session_state.full_content:
             else:
                 group_title = f"{chunk[0]['name']} - {chunk[-1]['name']}"
             
-            # 拼接这几集的内容
+            # 重新使用标准的 Markdown 分隔符拼装这几集的内容
             group_content = "\n\n---\n\n".join([item['content'] for item in chunk])
             
             # 渲染独立的 UI 容器
